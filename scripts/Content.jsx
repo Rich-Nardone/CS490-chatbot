@@ -1,7 +1,7 @@
     
 import * as React from 'react';
 
-
+import { Box } from './Box';
 import { Button } from './Button';
 import { Socket } from './Socket';
 
@@ -22,13 +22,8 @@ export function Content() {
 
     return (
         <div>
-            <h1>USPS Addresses!</h1>
-                <ol>
-                    {
-                        addresses.map(
-                            (address, index) => <li key={index}>{address}</li>)
-                    }
-                </ol>
+            <h1>~lofi bot~</h1>
+            <Box />
             <Button />
         </div>
     );
