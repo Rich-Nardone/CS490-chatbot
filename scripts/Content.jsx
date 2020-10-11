@@ -12,6 +12,7 @@ export function Content() {
         React.useEffect(() => {
             Socket.on('addresses received', (data) => {
                 console.log("Received addresses from server: " + data['allAddresses']);
+                console.log("data: " + data);
                 setAddresses(data['allAddresses']);
             })
         });
@@ -24,7 +25,8 @@ export function Content() {
             <h1>USPS Addresses!</h1>
                 <ol>
                     {
-                    // TODO
+                        addresses.map(
+                            (address, index) => <li key={index}>{address}</li>)
                     }
                 </ol>
             <Button />

@@ -5,7 +5,7 @@ import os
 import flask
 import flask_sqlalchemy
 import flask_socketio
-import models 
+import models
 
 ADDRESSES_RECEIVED_CHANNEL = 'addresses received'
 
@@ -21,8 +21,7 @@ sql_user = os.environ['SQL_USER']
 sql_pwd = os.environ['SQL_PASSWORD']
 dbuser = os.environ['USER']
 
-database_uri = 'postgresql://{}:{}@localhost/postgres'.format(
-    sql_user, sql_pwd)
+database_uri = os.getenv('DATABASE_URL')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 
@@ -35,8 +34,16 @@ db.create_all()
 db.session.commit()
 
 def emit_all_addresses(channel):
-    # TODO
-    print("TODO")
+    
+    all_addresses = [ \
+        db_address.address for db_address in \
+        db.session.query(models.Usps).all()
+    ]
+    
+    
+    socketio.emit(channel, {
+        'allAddresses': all_addresses
+    })
 
 @socketio.on('connect')
 def on_connect():
@@ -45,7 +52,7 @@ def on_connect():
         'test': 'Connected'
     })
     
-    # TODO
+    emit_all_addresses(ADDRESSES_RECEIVED_CHANNEL)
     
 
 @socketio.on('disconnect')
@@ -63,6 +70,7 @@ def on_new_address(data):
 
 @app.route('/')
 def index():
+    
     emit_all_addresses(ADDRESSES_RECEIVED_CHANNEL)
 
     return flask.render_template("index.html")
