@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from './Button';
 import { Socket } from './Socket';
+import { Music } from './Music';
 
 const divStyle = {
   backgroundImage: 'url(' + 'static/lofi-background.jpg' + ')',
@@ -49,6 +50,7 @@ export function Content() {
     return (
         <div>
             <h1>~lofi bot~</h1>
+            <Music />
             <div style={divStyle}>
                 {messages.map(item => {
                     return <ol style={client}>client:{item}</ol>;
@@ -58,6 +60,7 @@ export function Content() {
                 })}
             </div> 
             <Button />
+            
         </div>
     );
 }
