@@ -1,15 +1,27 @@
 import * as React from 'react';
 import { Socket } from './Socket';
 
+const inputStyle = {
+  width: '500px',
+  borderRadius: '15px',
+  height:'40px'
+};
+
+const buttonStyle = {
+  borderRadius: '15px',
+  height:'40px'
+};
+
+
 function handleSubmit(event) {
-    let newAddress = document.getElementById("address_input");
-    Socket.emit('new address input', {
-        'address': newAddress.value,
+    let newMessage = document.getElementById("message_input");
+    Socket.emit('new message input', {
+        'message': newMessage.value,
     });
    
     
-    console.log('Sent the address ' + newAddress.value + ' to server!');
-    newAddress.value = ''
+    console.log('Sent the message ' + newMessage.value + ' to server!');
+    newMessage.value = ''
     
     event.preventDefault();
 }
@@ -17,8 +29,8 @@ function handleSubmit(event) {
 export function Button() {
     return (
         <form onSubmit={handleSubmit}>
-            <input id="address_input" placeholder="Enter a USPS address"></input>
-            <button>Add to DB!</button>
+            <input style={inputStyle} id="message_input" placeholder="Enter a message"></input>
+            <button style={buttonStyle}>Send to Bot</button>
         </form>
     );
 }
