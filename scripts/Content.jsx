@@ -19,13 +19,17 @@ const client = {
   border: '3px solid #6495ED',
   padding: '10px',
   textAlign: 'right',
+  fontSize: '20px',
 };
 
 const server = {
+  borderRadius: '15px',
   alignSelf: 'left',
-  border: '3px solid #A9A9A9',
+  border: '3px solid #696969',
   padding: '10px',
-  width: '150px'
+  textAlign: 'left',
+  fontSize: '20px',
+  fontStyle: 'italic'
 };
 export function Content() {
     const [messages, setMessages] = React.useState([]);
@@ -47,7 +51,10 @@ export function Content() {
             <h1>~lofi bot~</h1>
             <div style={divStyle}>
                 {messages.map(item => {
-                    return <ol style={client}>{item}</ol>;
+                    return <ol style={client}>client:{item}</ol>;
+                })}
+                {messages.map(item => {
+                    return <ol style={server}>lofi bot:{item}</ol>;
                 })}
             </div> 
             <Button />
