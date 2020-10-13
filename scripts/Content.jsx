@@ -53,10 +53,7 @@ export function Content() {
             <Music />
             <div style={divStyle}>
                 {messages.map(item => {
-                    return <ol style={client}>client:{item}</ol>;
-                })}
-                {messages.map(item => {
-                    return <ol style={server}>lofi bot:{item}</ol>;
+                    return <ol style={client}>{item}</ol>;
                 })}
             </div> 
             <Button />

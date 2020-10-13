@@ -6,6 +6,7 @@ import flask
 import flask_sqlalchemy
 import flask_socketio
 import models
+import requests
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
 
@@ -28,8 +29,24 @@ db.app = app
 db.create_all()
 db.session.commit()
 
+def getBotResponse(received):
+    words = received.split(" ")
+    if(words[0] == "!!"):
+        if(words[1] == "about"):
+            return "My name is lofi. I am a chat bot programmed by Richard Nardone to help you out."
+        elif(words[1] == "help"):
+            return "I'm here to help. Care to tell me what your looking for?"
+        elif(words[1] == "funtranslate"):
+            if(len(words) >= 3):
+                return ' '.join(map(str, words[2:]))
+            else:
+                return "You forgot to add text for me to translate.\nTry !! funtranslate \'your-text-here\'"
+        else:
+            return "Looks like you forgot something. I support !! about, !! help and !! funtranslate <message>"
+    else:
+        return "I am still working on responses feel free to sit and listen to music while Richard adds that code."
+
 def emit_all_messages(channel):
-    
     all_messages = [ \
         db_message.message for db_message in \
         db.session.query(models.Messages).all()
@@ -55,9 +72,10 @@ def on_disconnect():
 
 @socketio.on('new message input')
 def on_new_message(data):
-    print("Got an event for new message input with data:", data)
+    print("Got an event for new message input with data:", data["message"])
     
     db.session.add(models.Messages(data["message"]));
+    db.session.add(models.Messages(getBotResponse(data["message"])));
     db.session.commit();
     
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
