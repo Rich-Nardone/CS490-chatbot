@@ -38,7 +38,7 @@ export function Content() {
     function getNewMessages() {
         React.useEffect(() => {
             Socket.on('messages received', (data) => {
-                console.log("Received messages from server: " + data['allAddresses']);
+                console.log("Received messages from server: " + data['allMessages']);
                 console.log("data: " + data);
                 setMessages(data['allMessages']);
             })
@@ -46,7 +46,6 @@ export function Content() {
     }
     
     getNewMessages();
-
     return (
         <div>
             <h1>~lofi bot~</h1>
@@ -55,6 +54,7 @@ export function Content() {
                 {messages.map(item => {
                     return <ol style={client}>{item}</ol>;
                 })}
+             
             </div> 
             <Button />
             
