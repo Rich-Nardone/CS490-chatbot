@@ -31,18 +31,18 @@ db.create_all()
 db.session.commit()
 
 def getBotResponse(received):
-    s = db.session.query(models.Responses.response).filter_by(message=received)
-    db.session.query(models.Messages).filter_by(models.Messages.message==received).update().values(response=s)
+    response = db.session.query(models.Responses.response).filter_by(message=received)
+    db.session.add(models.Messages(received, response));
     db.session.commit()
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
 def emit_all_messages(channel):
     all_messages = [ \
-        db_message.message for db_message in \
+        [db_message.response, db_message.message] for db_message in \
         db.session.query(models.Messages).all()
     ]
-    
-    socketio.emit(channel, {
+    print(all_messages)
+    socketio.emit('display', {
         'allMessages': all_messages
     })
 
@@ -64,9 +64,7 @@ def on_disconnect():
 def on_new_message(data):
     print("Got an event for new message input with data:", data["message"])
     
-    db.session.add(models.Messages(data["message"],None));
     getBotResponse(data["message"])
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
 @app.route('/')
 def index():

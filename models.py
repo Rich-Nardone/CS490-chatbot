@@ -13,7 +13,7 @@ class Messages(db.Model):
         self.response = b
         
     def __repr__(self):
-        return ' '+self.message +' '+ self.response
+        return self.message, self.response
 
 class Responses(db.Model):
     message = db.Column(db.String(120), primary_key=True)
@@ -24,5 +24,5 @@ class Responses(db.Model):
         self.message = b
         
     def __repr__(self):
-        return ' '+self.message +' '+ self.response
+        return self.response
 
