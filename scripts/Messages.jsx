@@ -48,7 +48,7 @@ export function Messages() {
     return (
             <div style={divStyle}>
                 {messages.map(item => {
-                    return (<div><ol style={client}>{item[0]}</ol> <ol style={server}>{item[1]}</ol></div>);
+                    return (<div><ol style={client}>{item[1]}</ol> <ol style={server}>{item[0]}</ol></div>);
                 })}
             </div> 
     );
