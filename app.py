@@ -10,7 +10,6 @@ import requests
 import datetime
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
-
 app = flask.Flask(__name__)
 
 socketio = flask_socketio.SocketIO(app)
@@ -30,19 +29,32 @@ db.app = app
 db.create_all()
 db.session.commit()
 
-def getBotResponse(received):
-    response = db.session.query(models.Responses.response).filter_by(message=received)
-    db.session.add(models.Messages(received, response));
+def getTranslation(text):
+    url = 'https://api.funtranslations.com/translate/valyrian.json?text='+text
+    response = requests.get(url)
+    json_body = response.json()
+    if(response == '<Response [200]>'):
+        translation = 'In Valyrian '+text+ ' is '+ json_body["contents"]["translated"]
+    else:
+        translation = "Sorry rate limit exceeded try again later"
+    db.session.add(models.Messages(translation, 'server'));
     db.session.commit()
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+def getBotResponse(message):
+    hold = message.split(' ')
+    if(len(hold) >=3):
+        if(hold[0] == "!!" and hold[1] == "funtranslate"):
+            getTranslation(' '.join(map(str, hold[2:])))
+    else:
+        response = db.session.query(models.Responses.response).filter_by(message=message)
+        db.session.add(models.Messages(response, 'server'));
+        db.session.commit()
 
 def emit_all_messages(channel):
     all_messages = [ \
-        [db_message.response, db_message.message] for db_message in \
+        [db_message.who, db_message.message] for db_message in \
         db.session.query(models.Messages).all()
     ]
-    print(all_messages)
-    socketio.emit('display', {
+    socketio.emit(channel, {
         'allMessages': all_messages
     })
 
@@ -52,7 +64,6 @@ def on_connect():
     socketio.emit('connected', {
         'test': 'Connected'
     })
-    
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     
 
@@ -63,14 +74,14 @@ def on_disconnect():
 @socketio.on('new message input')
 def on_new_message(data):
     print("Got an event for new message input with data:", data["message"])
-    
+    db.session.add(models.Messages(data["message"], 'client'));
+    db.session.commit()
     getBotResponse(data["message"])
+    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
 
 @app.route('/')
 def index():
-    
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
-
     return flask.render_template("index.html")
 
 if __name__ == '__main__': 

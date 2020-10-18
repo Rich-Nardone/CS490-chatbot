@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Socket } from './Socket';
 
-
 const divStyle = {
   backgroundImage: 'url(' + 'static/lofi-background.jpg' + ')',
   padding: '40px',
@@ -31,24 +30,28 @@ const server = {
   fontSize: '20px',
   fontStyle: 'italic'
 };
+
 export function Messages() {
     const [messages, setMessages] = React.useState([]);
     function displayMessages() {
         React.useEffect(() => {
-            Socket.on('display', (data) => {
-                console.log("Received messages from server: " + data);
-                console.log("data: " + data[0]);
+            Socket.on('messages received', (data) => {
+                console.log("Received message from server: " + data);
+                console.log("data: " + data['allMessages']);
                 setMessages(data['allMessages']);
             });
         });
     }
-    
     displayMessages();
-    
     return (
             <div style={divStyle}>
                 {messages.map(item => {
-                    return (<div><ol style={client}>{item[1]}</ol> <ol style={server}>{item[0]}</ol></div>);
+                    if(item[0] === "client"){
+                        return <ol style={client}>{item[1]}</ol>;
+                    }
+                    if(item[0] === "server"){
+                        return <ol style={server}>{item[1]}</ol>;
+                    }
                 })}
             </div> 
     );
