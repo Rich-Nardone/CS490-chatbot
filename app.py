@@ -30,7 +30,18 @@ db.create_all()
 db.session.commit()
 
 count = 0
-
+def getJoke():
+    print('Getting a joke from web')
+    url ='https://geek-jokes.sameerkumar.website/api?format=json'
+    response = requests.get(url)
+    json_body = response.json()
+    
+    translation = json_body["joke"]
+   
+    now = datetime.datetime.now()
+    time = now.strftime("%H:%M:%S")
+    db.session.add(models.Messages(translation, 'server',time));
+    db.session.commit()
 def getTranslation(text):
     print('Sending text to be translated')
     url = 'https://api.funtranslations.com/translate/valyrian.json?text='+text
@@ -47,7 +58,10 @@ def getTranslation(text):
 def getBotResponse(message):
     print('Getting bot response')
     hold = message.split(' ')
-    if(len(hold) >=3):
+    if(len(hold)==2):
+        if(hold[0] == "!!" and hold[1] == "joke"):
+            getJoke()
+    elif(len(hold) >=3):
         if(hold[0] == "!!" and hold[1] == "funtranslate"):
             getTranslation(' '.join(map(str, hold[2:])))
     else:
