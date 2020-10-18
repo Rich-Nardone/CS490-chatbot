@@ -29,6 +29,8 @@ db.app = app
 db.create_all()
 db.session.commit()
 
+count = 0
+
 def getTranslation(text):
     url = 'https://api.funtranslations.com/translate/valyrian.json?text='+text
     response = requests.get(url)
@@ -60,16 +62,25 @@ def emit_all_messages(channel):
 
 @socketio.on('connect')
 def on_connect():
+    global count
+    count+=1
     print('Someone connected!')
-    socketio.emit('connected', {
-        'test': 'Connected'
+    socketio.emit('connection', {
+        'connection': 'connected',
+        'count': count
     })
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     
 
 @socketio.on('disconnect')
 def on_disconnect():
-    print ('Someone disconnected!')
+    global count
+    count-=1
+    print('Someone disconnected!')
+    socketio.emit('connection', {
+        'connection': 'disconnected',
+        'count': count
+    })
 
 @socketio.on('new message input')
 def on_new_message(data):

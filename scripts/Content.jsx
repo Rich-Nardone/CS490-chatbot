@@ -3,6 +3,7 @@ import { Button } from './Button';
 import { Socket } from './Socket';
 import { Music } from './Music';
 import { Messages } from './Messages';
+import { Users } from './Users';
 
 export function Content() {
     
@@ -10,6 +11,7 @@ export function Content() {
         <div>
             <h1>~lofi bot~</h1>
             <Music />
+            <Users />
             <Messages /> 
             <Button />
         </div>
