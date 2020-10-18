@@ -32,6 +32,7 @@ db.session.commit()
 count = 0
 
 def getTranslation(text):
+    print('Sending text to be translated')
     url = 'https://api.funtranslations.com/translate/valyrian.json?text='+text
     response = requests.get(url)
     json_body = response.json()
@@ -39,21 +40,28 @@ def getTranslation(text):
         translation = 'In Valyrian '+text+ ' is '+ json_body["contents"]["translated"]
     else:
         translation = "Sorry rate limit exceeded try again later"
-    db.session.add(models.Messages(translation, 'server'));
+    now = datetime.datetime.now()
+    time = now.strftime("%H:%M:%S")
+    db.session.add(models.Messages(translation, 'server',time));
     db.session.commit()
 def getBotResponse(message):
+    print('Getting bot response')
     hold = message.split(' ')
     if(len(hold) >=3):
         if(hold[0] == "!!" and hold[1] == "funtranslate"):
             getTranslation(' '.join(map(str, hold[2:])))
     else:
-        response = db.session.query(models.Responses.response).filter_by(message=message)
-        db.session.add(models.Messages(response, 'server'));
+        response = db.session.query(models.Responses.response).filter_by(message=message).first()
+        if(response is None):
+            response = 'Sorry the command you entered could not be found'
+        now = datetime.datetime.now()
+        time = now.strftime("%H:%M:%S")
+        db.session.add(models.Messages(response, 'server', time));
         db.session.commit()
 
 def emit_all_messages(channel):
     all_messages = [ \
-        [db_message.who, db_message.message] for db_message in \
+        [db_message.who, db_message.message, db_message.time,] for db_message in \
         db.session.query(models.Messages).all()
     ]
     socketio.emit(channel, {
@@ -84,8 +92,11 @@ def on_disconnect():
 
 @socketio.on('new message input')
 def on_new_message(data):
+    now = datetime.datetime.now()
+    time = now.strftime("%H:%M:%S")
     print("Got an event for new message input with data:", data["message"])
-    db.session.add(models.Messages(data["message"], 'client'));
+    print(time)
+    db.session.add(models.Messages(data["message"], 'client', time));
     db.session.commit()
     getBotResponse(data["message"])
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)

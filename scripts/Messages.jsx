@@ -47,10 +47,10 @@ export function Messages() {
             <div style={divStyle}>
                 {messages.map(item => {
                     if(item[0] === "client"){
-                        return <ol style={client}>{item[1]}</ol>;
+                        return <ol style={client}><p>User~</p><p> {item[1]}</p><p>{item[2]}</p></ol>;
                     }
                     if(item[0] === "server"){
-                        return <ol style={server}>{item[1]}</ol>;
+                        return <ol style={server}><p>lofi~</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
                     }
                 })}
             </div> 
