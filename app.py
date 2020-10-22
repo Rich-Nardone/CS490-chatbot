@@ -47,11 +47,8 @@ def getTranslation(text):
     url = 'https://api.funtranslations.com/translate/valyrian.json?text='+text
     response = requests.get(url)
     json_body = response.json()
-    print(response)
-    if(response == '<Response [200]>'):
-        translation = 'In Valyrian '+text+ ' is '+ json_body["contents"]["translated"]
-    else:
-        translation = "Sorry the translation api is down right now. Try again later."
+    translation = 'In Valyrian '+text+ ' is '+ json_body["contents"]["translated"]
+    translation = "Sorry the translation api is down right now. Try again later."
     now = datetime.datetime.now()
     time = now.strftime("%H:%M:%S")
     db.session.add(models.Messages(translation, 'server',time));
@@ -74,18 +71,20 @@ def getBotResponse(message):
             time = now.strftime("%H:%M:%S")
             db.session.add(models.Messages(response, 'link', time));
             db.session.commit()
-        elif(len(hold)==2):
-            if(hold[0] == "!!" and hold[1] == "joke"):
-                getJoke()
-        elif(len(hold) >=3):
-            if(hold[0] == "!!" and hold[1] == "funtranslate"):
-                getTranslation(' '.join(map(str, hold[2:])))
-    if(response == ''):
-        response = db.session.query(models.Responses.response).filter_by(message=message).first()
-        now = datetime.datetime.now()
-        time = now.strftime("%H:%M:%S")
-        db.session.add(models.Messages(response, 'server', time));
-        db.session.commit()
+    
+    if(len(hold)==2):
+        if(hold[0] == "!!" and hold[1] == "joke"):
+            getJoke()
+        elif(hold[0] == "!!"):
+            response = db.session.query(models.Responses.response).filter_by(message=message).first()
+            now = datetime.datetime.now()
+            time = now.strftime("%H:%M:%S")
+            db.session.add(models.Messages(response, 'server', time));
+            db.session.commit()
+    elif(len(hold) >=3):
+        if(hold[0] == "!!" and hold[1] == "funtranslate"):
+            getTranslation(' '.join(map(str, hold[2:])))
+    
     
 def emit_all_messages(channel):
     all_messages = [ \
