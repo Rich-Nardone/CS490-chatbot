@@ -30,60 +30,80 @@ db.create_all()
 db.session.commit()
 
 count = 0
+name = ''
 def getJoke():
     print('Getting a joke from web')
     url ='https://geek-jokes.sameerkumar.website/api?format=json'
     response = requests.get(url)
     json_body = response.json()
-    
     translation = json_body["joke"]
-   
     now = datetime.datetime.now()
     time = now.strftime("%H:%M:%S")
     db.session.add(models.Messages(translation, 'server',time));
     db.session.commit()
+    
 def getTranslation(text):
     print('Sending text to be translated')
     url = 'https://api.funtranslations.com/translate/valyrian.json?text='+text
     response = requests.get(url)
     json_body = response.json()
+    print(response)
     if(response == '<Response [200]>'):
         translation = 'In Valyrian '+text+ ' is '+ json_body["contents"]["translated"]
     else:
-        translation = "Sorry rate limit exceeded try again later"
+        translation = "Sorry the translation api is down right now. Try again later."
     now = datetime.datetime.now()
     time = now.strftime("%H:%M:%S")
     db.session.add(models.Messages(translation, 'server',time));
     db.session.commit()
+    
 def getBotResponse(message):
     print('Getting bot response')
     hold = message.split(' ')
-    if(len(hold)==2):
-        if(hold[0] == "!!" and hold[1] == "joke"):
-            getJoke()
-    elif(len(hold) >=3):
-        if(hold[0] == "!!" and hold[1] == "funtranslate"):
-            getTranslation(' '.join(map(str, hold[2:])))
-    else:
+    
+    if(len(message)>4):
+        if(message[-4:] == '.jpg' or message[-4:] == '.gif' or message[-4:] == '.png'):
+            response = message
+            now = datetime.datetime.now()
+            time = now.strftime("%H:%M:%S")
+            db.session.add(models.Messages(response, 'image', time));
+            db.session.commit()
+        elif(message[:4] == 'http'):
+            response = message
+            now = datetime.datetime.now()
+            time = now.strftime("%H:%M:%S")
+            db.session.add(models.Messages(response, 'link', time));
+            db.session.commit()
+        elif(len(hold)==2):
+            if(hold[0] == "!!" and hold[1] == "joke"):
+                getJoke()
+        elif(len(hold) >=3):
+            if(hold[0] == "!!" and hold[1] == "funtranslate"):
+                getTranslation(' '.join(map(str, hold[2:])))
+    if(response == ''):
         response = db.session.query(models.Responses.response).filter_by(message=message).first()
-        if(response is None):
-            response = 'Sorry the command you entered could not be found'
         now = datetime.datetime.now()
         time = now.strftime("%H:%M:%S")
         db.session.add(models.Messages(response, 'server', time));
         db.session.commit()
-
+    
 def emit_all_messages(channel):
     all_messages = [ \
         [db_message.who, db_message.message, db_message.time,] for db_message in \
         db.session.query(models.Messages).all()
     ]
     socketio.emit(channel, {
-        'allMessages': all_messages
+        'allMessages': all_messages,
     })
 
 @socketio.on('connect')
 def on_connect():
+    print('Someone connected! Waiting for them to login')
+    
+@socketio.on('new google user')
+def on_new_google_user(data):
+    global name 
+    name = data["name"]
     global count
     count+=1
     print('Someone connected!')
@@ -92,8 +112,9 @@ def on_connect():
         'count': count
     })
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
+    print("Got an event for new google user input with data:", data)
     
-
+    
 @socketio.on('disconnect')
 def on_disconnect():
     global count
@@ -117,7 +138,6 @@ def on_new_message(data):
 
 @app.route('/')
 def index():
-    emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     return flask.render_template("index.html")
 
 if __name__ == '__main__': 

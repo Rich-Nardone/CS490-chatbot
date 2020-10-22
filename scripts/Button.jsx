@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Socket } from './Socket';
 
 const inputStyle = {
-  width: '500px',
+  width: '600px',
   borderRadius: '15px',
   height:'40px'
 };
@@ -18,9 +18,8 @@ function handleSubmit(event) {
     Socket.emit('new message input', {
         'message': newMessage.value,
     });
-    console.log('Sent the message ' + newMessage.value + ' to server!');
+    console.log('Sent the message ' + newMessage.value + 'from '+' to server!');
     newMessage.value = ''
-    
     event.preventDefault();
 }
 

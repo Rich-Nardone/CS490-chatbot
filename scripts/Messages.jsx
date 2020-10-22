@@ -7,9 +7,8 @@ const divStyle = {
   height: '400px',
   width: '1000px',
   objectFit: 'contain',
-  overflow:'auto',
+  overflow: 'auto',
   borderRadius: '15px',
-  scrollbarBaseColor: 'grey',
 };
 
 const client = {
@@ -33,11 +32,11 @@ const server = {
 
 export function Messages() {
     const [messages, setMessages] = React.useState([]);
+    const [name, setName] = React.useState('');
     function displayMessages() {
         React.useEffect(() => {
             Socket.on('messages received', (data) => {
-                console.log("Received message from server: " + data);
-                console.log("data: " + data['allMessages']);
+                console.log("Received message from server for" + data['name'] );
                 setMessages(data['allMessages']);
             });
         });
@@ -47,10 +46,16 @@ export function Messages() {
             <div style={divStyle}>
                 {messages.map(item => {
                     if(item[0] === "client"){
-                        return <ol style={client}><p>User~</p><p> {item[1]}</p><p>{item[2]}</p></ol>;
+                        return <ol style={client}><p>User~</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
                     }
                     if(item[0] === "server"){
                         return <ol style={server}><p>lofi~</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
+                    }
+                    if(item[0] === "image"){
+                        return <ol style={server}><img src={item[1]} alt="rendered picture" width="500" height="600"/></ol>;
+                    }
+                    if(item[0] === "link"){
+                        return <ol style={server}><a href={item[1]}>rendered link</a></ol>;
                     }
                 })}
             </div> 
