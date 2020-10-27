@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Socket } from './Socket';
+import {Socket} from './Socket';
 
 const divStyle = {
   backgroundImage: 'url(' + 'static/lofi-background.jpg' + ')',
@@ -27,36 +27,33 @@ const server = {
   padding: '10px',
   textAlign: 'left',
   fontSize: '20px',
-  fontStyle: 'italic'
+  fontStyle: 'italic',
 };
 
 export function Messages() {
-    const [messages, setMessages] = React.useState([]);
-    function displayMessages() {
-        React.useEffect(() => {
-            Socket.on('messages received', (data) => {
-                console.log("Received message from server for" + data['name'] );
-                setMessages(data['allMessages']);
-            });
-        });
-    }
-    displayMessages();
-    return (
-            <div style={divStyle}>
-                {messages.map(item => {
-                    if(item[0] === "server"){
-                        return <ol style={server}><p>lofi~</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
-                    }
-                    else if(item[0] === "image"){
-                        return <ol style={server}><img src={item[1]} alt="rendered picture" width="500" height="600"/></ol>;
-                    }
-                    else if(item[0] === "link"){
-                        return <ol style={server}><a href={item[1]}>rendered link</a></ol>;
-                    }
-                    else {
-                        return <ol style={client}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
-                    }
-                })}
-            </div> 
-    );
+  const [messages, setMessages] = React.useState([]);
+  function displayMessages() {
+    React.useEffect(() => {
+      Socket.on('messages received', (data) => {
+        console.log('Received message from server for' + data['name'] );
+        setMessages(data['allMessages']);
+      });
+    });
+  }
+  displayMessages();
+  return (
+    <div style={divStyle}>
+      {messages.map((item) => {
+        if (item[0] === 'server') {
+          return <ol style={server}><p>lofi~</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
+        } else if (item[0] === 'image') {
+          return <ol style={server}><img src={item[1]} alt="rendered picture" width="500" height="600"/></ol>;
+        } else if (item[0] === 'link') {
+          return <ol style={server}><a href={item[1]}>rendered link</a></ol>;
+        } else {
+          return <ol style={client}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
+        }
+      })}
+    </div>
+  );
 }
