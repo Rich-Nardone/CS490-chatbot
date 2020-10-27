@@ -66,7 +66,8 @@ def getBotResponse(message):
             now = datetime.datetime.now()
             time = now.strftime("%H:%M:%S")
             db.session.add(models.Messages(message, 'link', time));
-        elif(hold[1] == "joke"):
+    elif(message[:2] == '!!'):
+        if(hold[1] == "joke"):
             getJoke()
         elif(hold[1] == "funtranslate"):
             getTranslation(' '.join(map(str, hold[2:])))
