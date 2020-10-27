@@ -27,5 +27,19 @@ class Responses(db.Model):
         
     def __repr__(self):
         return self.response
+        
+class Authuser(db.Model):
+    name = db.Column(db.String(120), primary_key=True)
+    propic = db.Column(db.String(120))
+    sid = db.Column(db.String(255))
+    
+    def __init__(self, a, b, c):
+        self.name = a
+        self.propic = b
+        self.sid = c
+        
+    def __repr__(self):
+        return self.name, self.propic, self.sid
+
 
 

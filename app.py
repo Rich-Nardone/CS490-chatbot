@@ -8,6 +8,7 @@ import flask_socketio
 import models
 import requests
 import datetime
+from flask import request
 
 MESSAGES_RECEIVED_CHANNEL = 'messages received'
 app = flask.Flask(__name__)
@@ -29,8 +30,6 @@ db.app = app
 db.create_all()
 db.session.commit()
 
-count = 0
-name = ''
 def getJoke():
     print('Getting a joke from web')
     url ='https://geek-jokes.sameerkumar.website/api?format=json'
@@ -58,33 +57,25 @@ def getBotResponse(message):
     print('Getting bot response')
     hold = message.split(' ')
     
-    if(len(message)>4):
+    if(message[:2] != '!!'):
         if(message[-4:] == '.jpg' or message[-4:] == '.gif' or message[-4:] == '.png'):
-            response = message
             now = datetime.datetime.now()
             time = now.strftime("%H:%M:%S")
-            db.session.add(models.Messages(response, 'image', time));
-            db.session.commit()
+            db.session.add(models.Messages(message, 'image', time));
         elif(message[:4] == 'http'):
-            response = message
             now = datetime.datetime.now()
             time = now.strftime("%H:%M:%S")
-            db.session.add(models.Messages(response, 'link', time));
-            db.session.commit()
-    
-    if(len(hold)==2):
-        if(hold[0] == "!!" and hold[1] == "joke"):
+            db.session.add(models.Messages(message, 'link', time));
+        elif(hold[1] == "joke"):
             getJoke()
-        elif(hold[0] == "!!"):
+        elif(hold[1] == "funtranslate"):
+            getTranslation(' '.join(map(str, hold[2:])))
+        else:
             response = db.session.query(models.Responses.response).filter_by(message=message).first()
             now = datetime.datetime.now()
             time = now.strftime("%H:%M:%S")
             db.session.add(models.Messages(response, 'server', time));
-            db.session.commit()
-    elif(len(hold) >=3):
-        if(hold[0] == "!!" and hold[1] == "funtranslate"):
-            getTranslation(' '.join(map(str, hold[2:])))
-    
+    db.session.commit()
     
 def emit_all_messages(channel):
     all_messages = [ \
@@ -101,14 +92,19 @@ def on_connect():
     
 @socketio.on('new google user')
 def on_new_google_user(data):
-    global name 
     name = data["name"]
-    global count
-    count+=1
+    propic = data["propic"]
+    sid = request.sid
+    db.session.add(models.Authuser(name, propic, sid));
+    db.session.commit()
+    all_users = [ \
+        [db_authuser.name,db_authuser.propic,db_authuser.sid] for db_authuser in \
+        db.session.query(models.Authuser).all()
+    ]
     print('Someone connected!')
     socketio.emit('connection', {
         'connection': 'connected',
-        'count': count
+        'count': len(all_users)
     })
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)
     print("Got an event for new google user input with data:", data)
@@ -116,21 +112,28 @@ def on_new_google_user(data):
     
 @socketio.on('disconnect')
 def on_disconnect():
-    global count
-    count-=1
+    sid = request.sid
+    db.session.query(models.Authuser.sid).filter_by(sid=sid).delete()
+    db.session.commit()
+    all_users = [ \
+        [db_authuser.name,db_authuser.propic,db_authuser.sid] for db_authuser in \
+        db.session.query(models.Authuser).all()
+    ]
     print('Someone disconnected!')
     socketio.emit('connection', {
         'connection': 'disconnected',
-        'count': count
+        'count': len(all_users)
     })
 
 @socketio.on('new message input')
 def on_new_message(data):
+    sid = request.sid
+    name = db.session.query(models.Authuser.name).filter_by(sid=sid).first()
     now = datetime.datetime.now()
     time = now.strftime("%H:%M:%S")
     print("Got an event for new message input with data:", data["message"])
     print(time)
-    db.session.add(models.Messages(data["message"], 'client', time));
+    db.session.add(models.Messages(data["message"], name, time));
     db.session.commit()
     getBotResponse(data["message"])
     emit_all_messages(MESSAGES_RECEIVED_CHANNEL)

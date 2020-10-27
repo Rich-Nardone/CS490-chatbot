@@ -2,11 +2,10 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import { Socket } from './Socket';
 import GoogleLogin from 'react-google-login';
-
-
+import { useGoogleLogout } from 'react-google-login'
+ 
 function handleSubmit(response) {
-    console.log(response)
-    let name = "John Doe";
+    console.log(response);
     Socket.emit('new google user', {
         'name': response['profileObj']['name'],
         'propic': response['profileObj']['imageUrl']
@@ -14,7 +13,7 @@ function handleSubmit(response) {
     console.log('Sent the name ' + response['profileObj']['name'] + ' to server!');
 }
 function handleFailure(response) {
-    console.log(response)
+    console.log(response);
     alert("Try again: Failed to login to Google Account");
 }
 
@@ -25,6 +24,6 @@ export function GoogleButton() {
     onSuccess={handleSubmit}
     onFailure={handleFailure}
     cookiePolicy={'single_host_origin'}
-  />
+  />;
 
 }
