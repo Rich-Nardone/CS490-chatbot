@@ -29,14 +29,16 @@ const server = {
   fontSize: '20px',
   fontStyle: 'italic',
 };
-
 export function Messages() {
   const [messages, setMessages] = React.useState([]);
+  const [name, setName] = React.useState();
   function displayMessages() {
     React.useEffect(() => {
       Socket.on('messages received', (data) => {
         console.log('Received message from server for' + data['name'] );
         setMessages(data['allMessages']);
+        setName(data['name']);
+        console.log(data['name']);
       });
     });
   }
@@ -50,8 +52,10 @@ export function Messages() {
           return <ol style={server}><img src={item[1]} alt="rendered picture" width="500" height="600"/></ol>;
         } else if (item[0] === 'link') {
           return <ol style={server}><a href={item[1]}>rendered link</a></ol>;
-        } else {
+        } else if (item[0] === name) {
           return <ol style={client}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
+        } else {
+          return <ol style={server}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
         }
       })}
     </div>

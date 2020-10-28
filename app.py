@@ -101,6 +101,10 @@ def emit_all_messages(channel):
     """
         emit messages to the client
     """
+    sid = request.sid
+    person = db.session.query(models.Authuser.name).filter_by(sid=sid).first()
+    db.session.commit()
+    print(person.name)
     all_messages = [
         [
             db_message.who,
@@ -113,6 +117,7 @@ def emit_all_messages(channel):
         channel,
         {
             "allMessages": all_messages,
+            "name": person.name
         },
     )
 
