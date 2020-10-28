@@ -55,7 +55,7 @@ export function Messages() {
         } else if (item[0] === name) {
           return <ol style={client}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
         } else {
-          return <ol style={server}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
+          return <ol style={client}><p>{item[0]}</p><p>  {item[1]}</p><p>{item[2]}</p></ol>;
         }
       })}
     </div>
